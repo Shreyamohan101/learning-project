@@ -1,6 +1,19 @@
 const express = require('express');
 const connectDB = require('./database.js');
 const app = express();
+const User = require('./src/model/user');
+
+app.post('/signup',async(req, res) => {
+    const user = new User({
+        FirstName: 'I_sam',
+        password: 211212,
+        email: 'Tin@gmail.com',
+        age: 21,
+        bio: 'dcbkcjsdjksj'
+    });
+    await user.save();
+    res.send("User added successfully");
+});
 
 connectDB()
 .then(()=> {
@@ -10,10 +23,11 @@ connectDB()
    
         
     })
+})
     .catch((err) => {
         console.error('Error connecting to MongoDB:', err);
         process.exit(1);
     });
     
-});
+
 
