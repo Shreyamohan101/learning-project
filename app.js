@@ -1,18 +1,42 @@
 const express = require('express');
 const connectDB = require('./database.js');
 const app = express();
-const User = require('./src/model/user');
+const User = require('./src/model/user.js');
 
-app.post('/signup',async(req, res) => {
-    const user = new User({
-        FirstName: 'I_sam',
-        password: 211212,
-        email: 'Tin@gmail.com',
-        age: 21,
-        bio: 'dcbkcjsdjksj'
-    });
-    await user.save();
-    res.send("User added successfully");
+app.use(express.json());// 1.)this helps to convert the json data to java script object or readable format; As json is not readable for server...
+                        // 2.) why use not a particular get/post/put....bcoz use will work for all amd we want it for all routes to work.
+
+
+ // GET /1 user
+ app.get('/user',async(req,res)=>
+{
+    const email = req.body.email;
+    try{
+        const user = await User.find({email: email});
+        res.send(user);
+    }
+    catch(err){
+        res.status(400).send(err);
+    }
+    
+});                      
+app.post('/signup',async (req, res) => {
+     const user = new User(req.body);
+    //({
+    //     FirstName: 'shreya',
+    //     password: 19283,
+    //     email: 'shreya@gmail.com',
+    //     age: 20,
+    //     bio: 'backend developer'
+    // });
+    try{
+        await user.save();
+        res.send("User added successfully");
+    }
+    catch(err){
+        res.status(400).send(err);
+    }
+    
 });
 
 connectDB()
@@ -29,5 +53,3 @@ connectDB()
         process.exit(1);
     });
     
-
-
