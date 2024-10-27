@@ -1,33 +1,32 @@
 require('dotenv').config();
 
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const url = process.env.URL;
 
-const connect = async () => {
-  const connection = mongoose.connection.readyState;
+const connectDB = async () => {
+  const connection = mongoose.connection.readyState;   //This line of code assigns the current connection state of a MongoDB database to a constant variable named connection.
 
   if (connection === 1) {
     console.log("Already connected");
     return;
   } else if (connection === 2) {
     console.log("Connecting");
-    return;
+    return
   }
 
   try {
-    await mongoose.connect(url, {
-      dbName: "AtlasCluster",
+    await mongoose.connect(url, {                        //1stly connect DB to Mongoose
+      dbName: "DevTinder",
       bufferCommands: false,
     });
     console.log("Connected");
   } catch (error) {
-    console.error("Could not connect to MongoDB:", error);
-    throw new Error("Could not connect");
+    console.error("Could not connectDB to MongoDB:", error);
+    throw new Error("Could not connectDB");
   }
 };
 
-export default connect;
+module.exports = connectDB;
 
 
-//
