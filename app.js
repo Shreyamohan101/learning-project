@@ -2,7 +2,8 @@ const express = require('express');
 const connectDB = require('./database.js');
 const app = express();
 const User = require('./src/model/user.js');
-
+const bcrypt = require('bcrypt');
+const { validateSignUpData } = require('./utils/validation');
 app.use(express.json());// 1.)this helps to convert the json data to java script object or readable format; As json is not readable for server...
                         // 2.) why use not a particular get/post/put....bcoz use will work for all amd we want it for all routes to work.
 
@@ -21,17 +22,65 @@ app.use(express.json());// 1.)this helps to convert the json data to java script
     
 });                      
 app.post('/signup',async (req, res) => {
-     const user = new User(req.body);
-    //({
-    //     FirstName: 'shreya',
-    //     password: 19283,
-    //     email: 'shreya@gmail.com',
-    //     age: 20,
-    //     bio: 'backend developer'
-    // });
     try{
+        // validate the user
+        validateSignUpData(req);
+        
+        const {FirstName, LastName, email,age, password} = req.body;
+
+        //encrypt the password
+        
+        const hashedPassword = await bcrypt.hash(password, 12);
+        console.log(hashedPassword);
+
+        //creating new instance of user model
+        const user = new User({FirstName, LastName, email,age, password: hashedPassword});
+        
+
         await user.save();
         res.send("User added successfully");
+    }
+    catch(err){
+        res.status(400).send(err.message);
+    }
+    
+});
+// delete userbyid
+ app.delete('/user',async (req, res) => {
+    const userid = req.body.userid;
+    try{
+        await User.findByIdAndDelete(userid);
+        res.send("User deleted successfully");
+    }
+    catch(err){
+        res.status(400).send(err);
+    }
+    
+});
+
+// update user by id
+ app.put('/user',async (req, res) => {
+    const userid = req.body.userid;
+    const data = req.body;
+
+    try{
+        const Allowed_fields = ["age", "password", "bio"];
+        const UpdateAllowed = Object.keys(data).every(k=>Allowed_fields.includes(k));
+  
+        if(!UpdateAllowed)
+        {
+            throw new Error("You cannot update this field")
+
+        }
+    
+
+            const updatedUser = await User.findByIdAndUpdate(userid,data,{new:true});
+          
+               
+            
+            res.send(updatedUser);
+
+
     }
     catch(err){
         res.status(400).send(err);
@@ -53,3 +102,5 @@ connectDB()
         process.exit(1);
     });
     
+
+   

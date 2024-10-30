@@ -5,6 +5,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  LastName : {
+    type: String
+  },
     password: {
         type: String,
         required: true
@@ -12,7 +15,9 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        lowercase: true,
+        trim : true
     },
     age: {
         type: Number,
@@ -20,8 +25,14 @@ const UserSchema = new mongoose.Schema({
     },
     bio: {
         type: String
-    }
-})
+    },
+   
+},
+{
+    timestamps: true,
+    versionKey: false  // this will prevent creation of __v field in the MongoDB collection
+}
+);
 
 const User = mongoose.model('UserModel', UserSchema);
 
