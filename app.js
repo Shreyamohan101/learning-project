@@ -45,6 +45,30 @@ app.post('/signup',async (req, res) => {
     }
     
 });
+//login post api
+app.post('/login', async (req, res) => {
+    const {email, password} = req.body;
+    try{
+        const user = User.findOne({email:email});
+        if(!user) {
+            return res.status(400).send("Invalid username or password");
+        }
+        
+        const isMatch = await bcrypt.compare(password, user.password);
+        if(!isMatch)
+        {
+            return res.status(400).send("Invalid Credentials");
+        }
+        else
+        {
+            res.send("Login Successful");
+        }
+
+    }
+    catch(err){
+        res.status(400).send(err.message);
+    }
+});
 // delete userbyid
  app.delete('/user',async (req, res) => {
     const userid = req.body.userid;
