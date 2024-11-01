@@ -4,9 +4,10 @@ const app = express();
 const User = require('./src/model/user.js');
 const bcrypt = require('bcrypt');
 const { validateSignUpData } = require('./utils/validation');
+const cookieParser = require("cookie-parser");
 app.use(express.json());// 1.)this helps to convert the json data to java script object or readable format; As json is not readable for server...
                         // 2.) why use not a particular get/post/put....bcoz use will work for all amd we want it for all routes to work.
-
+app.use(cookieParser());
 
  // GET /1 user
  app.get('/user',async(req,res)=>
@@ -46,29 +47,35 @@ app.post('/signup',async (req, res) => {
     
 });
 //login post api
-app.post('/login', async (req, res) => {
-    const {email, password} = req.body;
+ app.post('/login',async (req, res) => {
+
+
     try{
-        const user = User.findOne({email:email});
-        if(!user) {
-            return res.status(400).send("Invalid username or password");
-        }
-        
-        const isMatch = await bcrypt.compare(password, user.password);
-        if(!isMatch)
-        {
-            return res.status(400).send("Invalid Credentials");
-        }
-        else
-        {
-            res.send("Login Successful");
+        const {email, password} = req.body;
+        const user = await User.findOne({email: email});
+        console.log(email);
+        console.log(password);
+        if(!user){
+            throw new Error("User not found");
         }
 
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if(isMatch){
+            
+            res.cookie("token", "fhvibujefuf32kvbdfvd");
+            res.send("Logged in successfully");
+        }
+        else{
+        throw new Error("Invalid credentials");
+        }
     }
     catch(err){
         res.status(400).send(err.message);
     }
+    
 });
+
 // delete userbyid
  app.delete('/user',async (req, res) => {
     const userid = req.body.userid;
