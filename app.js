@@ -5,9 +5,11 @@ const User = require('./src/model/user.js');
 const bcrypt = require('bcrypt');
 const { validateSignUpData } = require('./utils/validation');
 const cookieParser = require("cookie-parser");
+const jwt = require('jsonwebtoken');
 app.use(express.json());// 1.)this helps to convert the json data to java script object or readable format; As json is not readable for server...
                         // 2.) why use not a particular get/post/put....bcoz use will work for all amd we want it for all routes to work.
 app.use(cookieParser());
+
 
  // GET /1 user
  app.get('/user',async(req,res)=>
@@ -21,7 +23,15 @@ app.use(cookieParser());
         res.status(400).send(err);
     }
     
-});                      
+});  
+// TO GET cookie from profile
+ app.get('/profile',(req,res) => {
+    console.log(req.cookies);
+    res.send("Profile Page");
+});
+
+//signup post api
+                
 app.post('/signup',async (req, res) => {
     try{
         // validate the user
@@ -63,7 +73,9 @@ app.post('/signup',async (req, res) => {
 
         if(isMatch){
             
-            res.cookie("token", "fhvibujefuf32kvbdfvd");
+            const token = await jwt.sign({_id : user._id}, "Shreya@8");
+            console.log(token);
+            res.cookie("token", token);
             res.send("Logged in successfully");
         }
         else{
