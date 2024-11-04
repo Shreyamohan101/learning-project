@@ -25,9 +25,29 @@ app.use(cookieParser());
     
 });  
 // TO GET cookie from profile
- app.get('/profile',(req,res) => {
-    console.log(req.cookies);
-    res.send("Profile Page");
+ app.get('/profile',async(req,res) => {
+    try{
+     const cookies = req.cookies;
+     const {token} = cookies;
+     const decodedMsg =  await jwt.verify(token, "Shreya@8");
+     const {_id} = decodedMsg;
+     console.log("logged in user is " + _id);
+     if(!token){
+        throw new Error("invalid token");
+
+    }
+    const user = await User.findById(_id);
+    if(!user){
+        throw new Error( 'user not found' );
+    }
+    res.send(user);
+}
+
+
+    catch(err)
+    {
+        res.status(400).send(err);
+    }
 });
 
 //signup post api
@@ -72,7 +92,7 @@ app.post('/signup',async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
 
         if(isMatch){
-            
+            //create a jwt token
             const token = await jwt.sign({_id : user._id}, "Shreya@8");
             console.log(token);
             res.cookie("token", token);
