@@ -164,6 +164,7 @@ connectDB()
         console.error('Error connecting to MongoDB:', err);
         process.exit(1);
     });
+    //auth to be added
     
 
    
