@@ -1,8 +1,9 @@
 const express = require('express');
 const connectDB = require('./database.js');
 const app = express();
-const User = require('./src/model/user.js');
 const bcrypt = require('bcrypt');
+const {userAuth} = require('./middlewares/auth');
+
 const { validateSignUpData } = require('./utils/validation');
 const cookieParser = require("cookie-parser");
 const jwt = require('jsonwebtoken');
@@ -25,25 +26,11 @@ app.use(cookieParser());
     
 });  
 // TO GET cookie from profile
- app.get('/profile',async(req,res) => {
+ app.get('/profile',userAuth,async(req,res) => {
     try{
-     const cookies = req.cookies;
-     const {token} = cookies;
-     const decodedMsg =  await jwt.verify(token, "Shreya@8");
-     const {_id} = decodedMsg;
-     console.log("logged in user is " + _id);
-     if(!token){
-        throw new Error("invalid token");
-
+        const user = req.user;
+        res.send(user);
     }
-    const user = await User.findById(_id);
-    if(!user){
-        throw new Error( 'user not found' );
-    }
-    res.send(user);
-}
-
-
     catch(err)
     {
         res.status(400).send(err);
@@ -51,6 +38,7 @@ app.use(cookieParser());
 });
 
 //signup post api
+
                 
 app.post('/signup',async (req, res) => {
     try{
@@ -93,7 +81,7 @@ app.post('/signup',async (req, res) => {
 
         if(isMatch){
             //create a jwt token
-            const token = await jwt.sign({_id : user._id}, "Shreya@8");
+            const token = await jwt.sign({_id : user._id}, process.env.JWT_SECRET, {expiresIn: "12 hours"});
             console.log(token);
             res.cookie("token", token);
             res.send("Logged in successfully");
@@ -151,6 +139,9 @@ app.post('/signup',async (req, res) => {
     
 });
 
+
+
+
 connectDB()
 .then(()=> {
     console.log('Connected to MongoDB');
@@ -166,5 +157,3 @@ connectDB()
     });
     //auth to be added
     
-
-   
